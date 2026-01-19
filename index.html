@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solid Reach Corporation</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" type="image/x-icon" href="assets/logo.png">
+
+    <!-- Calendly -->
+    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+</head>
+
+<body class="loading">
+
+    <!-- Loader -->
+    <div id="loader">
+        <div class="loader-content">
+            <img src="assets/logo.png" alt="SRC Logo" class="pulsing-logo">
+            <div class="waves">
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg fixed-top desktop-nav">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="assets/logo.png" alt="SRC" height="40">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="#hero">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#why-us">Why Choose Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li>
+                    <li class="nav-item"><a class="nav-link btn-quote" href="#contact">Get a Quote</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="hero" class="d-flex align-items-center">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-7" data-aos="fade-right">
+                    <h1>We are a Call Center specialized in providing virtual agents to elevate your business endeavors
+                    </h1>
+                    <p class="lead mt-3">MAKING CALLS COUNT</p>
+                    <div class="mt-4">
+                        <a href="#services" class="btn btn-outline-light me-3">What We Do?</a>
+                        <a href="#contact" class="btn btn-primary">Get a Quote!</a>
+                    </div>
+                </div>
+                <div class="col-lg-5 text-center" data-aos="fade-left">
+                    <img src="assets/logo.png" alt="SRC Hero" class="img-fluid hero-img">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- About Us Section -->
+    <section id="about" class="section-padding bg-light">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
+                    <div class="about-img-wrapper" data-aos="zoom-in" data-aos-delay="300">
+                        <!-- Placeholder for an about image if user had one, using generic layout -->
+                        <div class="bg-shape" data-aos="fade-up" data-aos-delay="200"></div>
+                        <img src="assets/logo.png" alt="About SRC" class="img-fluid about-img animate-pulse"
+                            style="max-height: 400px; opacity: 1;">
+                    </div>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <h2 class="section-title">About Us</h2>
+                    <p>We provide virtual assistants that are trained to handle prospects according to your business
+                        needs. That includes and is not limited to Real Estate & Solar lead generation, acquisitions,
+                        lead closing, generating sales & general assistance ex. Rental Management.</p>
+                    <p>In SRC we focus on your ROI and how to actually be a supporting function to your overall
+                        operations by giving you outsourced callers with indistinguishable accents and knowledge that
+                        allows them to function perfectly in your local/external market.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="section-padding bg-white">
+        <div class="container">
+            <div class="section-header text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title">Our Services</h2>
+                <p>Tailored solutions for your business needs</p>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="service-card text-center">
+                        <div class="icon-box mb-3">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <h3>Residential Cold Calling</h3>
+                        <p>Virtual agents that are specialized in lead generation and prospecting residents with intent
+                            to sell their properties. Suited for companies and individuals looking for outbound lead
+                            generation and off market opportunities.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="service-card text-center">
+                        <div class="icon-box mb-3">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h3>Acquisitions</h3>
+                        <p>We provide closers that are qualified to follow up on your leads and take it to the finish
+                            line resulting in an increase in your Contracts/Listings/Product Sales.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="service-card text-center">
+                        <div class="icon-box mb-3">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h3>Commercial Cold Calling</h3>
+                        <p>Trained personnel that possess knowledge when it comes to the commercial side. Key merits our
+                            agents have are holding up conversations with business owners and extracting needed
+                            information that would help push the lead further.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section id="why-us" class="section-padding bg-light">
+        <div class="container">
+            <div class="section-header text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title">Why Should You Choose Us?</h2>
+            </div>
+            <div class="row justify-content-center">
+                <div class="col-lg-10" data-aos="zoom-in">
+                    <div class="feature-box-single">
+                        <i class="fas fa-quote-left text-warning mb-3" style="font-size: 2rem;"></i>
+                        <p>SRC was birthed to provide exceptional service by constantly developing internally and
+                            holding ourselves to extraordinary standards of communication and ensuring client
+                            satisfaction. Transparency and team effort goes a long way and that is the philosophy
+                            followed by every single employee in the firm.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="section-padding">
+        <div class="container">
+            <div class="section-header text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title">Our Pricing Plans</h2>
+                <p>Choose the plan that fits your growth</p>
+            </div>
+            <div class="row justify-content-center">
+                <!-- Bronze -->
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <h3>Bronze</h3>
+                            <div class="price">$1200<span>/mo</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> Full time professional cold caller</li>
+                            <li><i class="fas fa-check"></i> Quality assurance manager</li>
+                            <li><i class="fas fa-check"></i> Account manager</li>
+                            <li><i class="fas fa-check"></i> Weekly/Bi-weekly meetings</li>
+                        </ul>
+                        <a href="#contact" class="btn btn-pricing">Choose Plan</a>
+                    </div>
+                </div>
+                <!-- Silver -->
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="pricing-card popular">
+                        <div class="tag">Popular</div>
+                        <div class="pricing-header">
+                            <h3>Silver</h3>
+                            <div class="price">$1900<span>/mo</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> Full time professional cold caller</li>
+                            <li><i class="fas fa-check"></i> Professional acquisition manager</li>
+                            <li><i class="fas fa-check"></i> Quality assurance manager</li>
+                            <li><i class="fas fa-check"></i> Account manager</li>
+                            <li><i class="fas fa-check"></i> Weekly/Bi-weekly meetings</li>
+                        </ul>
+                        <a href="#contact" class="btn btn-pricing">Choose Plan</a>
+                    </div>
+                </div>
+                <!-- Gold -->
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <h3>Gold</h3>
+                            <div class="price">$2899<span>/mo</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> 2 Full time cold callers</li>
+                            <li><i class="fas fa-check"></i> Professional acquisition manager</li>
+                            <li><i class="fas fa-check"></i> Quality assurance manager</li>
+                            <li><i class="fas fa-check"></i> Account manager</li>
+                            <li><i class="fas fa-check"></i> Weekly/Bi-weekly meetings</li>
+                        </ul>
+                        <a href="#contact" class="btn btn-pricing">Choose Plan</a>
+                    </div>
+                </div>
+                <!-- Platinum -->
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <h3>Platinum</h3>
+                            <div class="price">$3500<span>/mo</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> 3 Full time cold callers</li>
+                            <li><i class="fas fa-check"></i> Dedicated Team Lead</li>
+                            <li><i class="fas fa-check"></i> Advanced Analytics</li>
+                            <li><i class="fas fa-check"></i> Priority Support</li>
+                            <li><i class="fas fa-check"></i> Daily Reporting</li>
+                        </ul>
+                        <a href="#contact" class="btn btn-pricing">Choose Plan</a>
+                    </div>
+                </div>
+                <!-- Diamond -->
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="500">
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <h3>Diamond</h3>
+                            <div class="price">$4200<span>/mo</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> 4 Full time cold callers</li>
+                            <li><i class="fas fa-check"></i> All Platinum Features</li>
+                            <li><i class="fas fa-check"></i> Custom CRM Integration</li>
+                            <li><i class="fas fa-check"></i> 24/7 Support Access</li>
+                        </ul>
+                        <a href="#contact" class="btn btn-pricing">Choose Plan</a>
+                    </div>
+                </div>
+                <!-- Enterprise -->
+                <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="600">
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <h3>Enterprise</h3>
+                            <div class="price">Custom</div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><i class="fas fa-check"></i> Fully Customized Team</li>
+                            <li><i class="fas fa-check"></i> White-label Solution</li>
+                            <li><i class="fas fa-check"></i> Strategic Consulting</li>
+                            <li><i class="fas fa-check"></i> Omnichannel Support</li>
+                        </ul>
+                        <a href="#contact" class="btn btn-pricing">Choose Plan</a>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4" style="color: #888;">
+                <p>Plus an extra fee of $150 per cold caller seat.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section-padding bg-light text-center">
+        <div class="container">
+            <div class="section-header mb-5" data-aos="fade-up">
+                <h2 class="section-title">Ready to Start?</h2>
+                <p>Book a discovery call with our team today.</p>
+            </div>
+
+            <div class="calendly-wrapper" data-aos="zoom-in">
+                <!-- Data-url will be used by JS to open modal -->
+                <button class="btn btn-calendly"
+                    onclick="Calendly.initPopupWidget({url: 'https://calendly.com/'});return false;">
+                    <i class="fas fa-calendar-alt"></i> BOOK A DISCOVERY CALL
+                </button>
+                <p class="mt-3 text-muted">A 30-minute call to discuss your needs.</p>
+            </div>
+
+            <div class="contact-info mt-5" data-aos="fade-up">
+                <p><i class="fas fa-envelope me-2 text-primary"></i> info@rezcc.com</p>
+                <p><i class="fas fa-globe me-2 text-primary"></i> www.rezcc.com</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <img src="assets/logo.png" alt="SRC" height="30" class="mb-3">
+                    <p class="mb-0">&copy; 2026 Solid Reach Corporation. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="js/script.js"></script>
+</body>
+
+</html>
