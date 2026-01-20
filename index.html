@@ -5,24 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solid Reach Corporation</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
-    <!-- AOS Animation -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="css/style.css">
+    <!-- Custom CSS (Bundled: Bootstrap + AOS + Style) -->
+    <link rel="stylesheet" href="css/bundle.css">
     <link rel="icon" type="image/x-icon" href="assets/logo.png">
-
-    <!-- Calendly -->
-    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
-    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
 </head>
 
 <body class="loading">
@@ -30,7 +22,28 @@
     <!-- Loader -->
     <div id="loader">
         <div class="loader-content">
-            <img src="assets/logo.png" alt="SRC Logo" class="pulsing-logo">
+            <svg class="pulsing-logo" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+                <g fill="#cba651" text-anchor="middle">
+
+                    <path d="M320 95 L320 150 L280 115 L180 195 L195 210 L290 135 Z" />
+                    <path d="M320 95 L275 95 L320 135 Z" />
+
+                    <path d="M190 240 L190 215 L215 195 L215 240 Z" />
+
+                    <path d="M230 240 L230 185 L255 165 L255 240 Z" />
+
+                    <path d="M270 240 L270 155 L295 135 L295 240 Z" />
+
+                    <text x="256" y="340" font-family="'Times New Roman', Times, serif" font-weight="bold"
+                        font-size="110" letter-spacing="2">SRC</text>
+
+                    <text x="256" y="390" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="24"
+                        letter-spacing="5">SOLID REACH</text>
+
+                    <text x="256" y="425" font-family="Arial, Helvetica, sans-serif" font-weight="bold" font-size="24"
+                        letter-spacing="5">CORPORATION</text>
+                </g>
+            </svg>
             <div class="waves">
                 <div class="wave"></div>
                 <div class="wave"></div>
@@ -86,9 +99,9 @@
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6 mb-4 mb-lg-0" data-aos="fade-right">
-                    <div class="about-img-wrapper" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="about-img-wrapper" data-aos="zoom-in" data-aos-delay="0">
                         <!-- Placeholder for an about image if user had one, using generic layout -->
-                        <div class="bg-shape" data-aos="fade-up" data-aos-delay="200"></div>
+                        <div class="bg-shape" data-aos="fade-up" data-aos-delay="0"></div>
                         <img src="assets/logo.png" alt="About SRC" class="img-fluid about-img animate-pulse"
                             style="max-height: 400px; opacity: 1;">
                     </div>
@@ -114,7 +127,7 @@
                 <p>Tailored solutions for your business needs</p>
             </div>
             <div class="row">
-                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="0">
                     <div class="service-card text-center">
                         <div class="icon-box mb-3">
                             <i class="fas fa-phone-alt"></i>
@@ -125,7 +138,7 @@
                             generation and off market opportunities.</p>
                     </div>
                 </div>
-                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="100">
                     <div class="service-card text-center">
                         <div class="icon-box mb-3">
                             <i class="fas fa-handshake"></i>
@@ -135,7 +148,7 @@
                             line resulting in an increase in your Contracts/Listings/Product Sales.</p>
                     </div>
                 </div>
-                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="200">
                     <div class="service-card text-center">
                         <div class="icon-box mb-3">
                             <i class="fas fa-building"></i>
@@ -294,11 +307,10 @@
             </div>
 
             <div class="calendly-wrapper" data-aos="zoom-in">
-                <!-- Data-url will be used by JS to open modal -->
-                <button class="btn btn-calendly"
-                    onclick="Calendly.initPopupWidget({url: 'https://calendly.com/'});return false;">
+                <!-- Direct Link to Calendly -->
+                <a href="https://calendly.com/" target="_blank" class="btn btn-calendly">
                     <i class="fas fa-calendar-alt"></i> BOOK A DISCOVERY CALL
-                </button>
+                </a>
                 <p class="mt-3 text-muted">A 30-minute call to discuss your needs.</p>
             </div>
 
@@ -321,10 +333,8 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <script src="js/script.js"></script>
+    <!-- Scripts (Bundled: Bootstrap + AOS + Script) -->
+    <script src="js/bundle.js"></script>
 </body>
 
 </html>
