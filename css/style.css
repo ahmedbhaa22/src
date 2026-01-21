@@ -744,7 +744,19 @@ header#hero {
 }
 
 .pricing-header .price span {
+    font-size: 1rem;
     color: #888;
+    font-weight: 400;
+}
+
+.pricing-header .strikethrough {
+    display: block;
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: line-through !important;
+    text-decoration-thickness: 2px !important;
+    margin-bottom: 5px;
+    font-weight: 500;
 }
 
 .pricing-features {
