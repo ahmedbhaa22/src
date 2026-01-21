@@ -773,7 +773,7 @@ header#hero {
     color: #ddd;
 }
 
-.pricing-features li i {
+.pricing-features li .svg-inline--fa {
     color: #fff;
     /* White checkmarks */
     background: var(--primary-gold);
