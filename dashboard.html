@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>SolidReach — Pricing Editor</title>
+  <style>
+    :root{
+      --gold:#C9A84C; --gold-light:#e0c063; --black-deep:#0a0a0a;
+      --black-card:#141414; --white:#f4f4f4; --grey:#9a9a9a; --line:rgba(201,168,76,.22);
+      --danger:#c0453b; --ok:#3a8a4f;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Poppins',system-ui,Segoe UI,Arial,sans-serif;background:var(--black-deep);color:var(--white);line-height:1.5}
+    a{color:var(--gold)}
+    h1,h2,h3{margin:0 0 .4em}
+    .wrap{max-width:960px;margin:0 auto;padding:24px 18px 80px}
+    .card{background:var(--black-card);border:1px solid var(--line);border-radius:14px;padding:22px}
+    .muted{color:var(--grey);font-size:.9rem}
+    label{display:block;font-size:.82rem;color:var(--grey);margin:12px 0 5px}
+    input[type=text],input[type=email],input[type=password],textarea,select{
+      width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);
+      background:#0f0f0f;color:var(--white);font:inherit}
+    textarea{min-height:120px;resize:vertical}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .check{display:flex;align-items:center;gap:8px;margin-top:14px}
+    .check input{width:auto}
+    button{font:inherit;font-weight:600;cursor:pointer;border-radius:8px;border:1.5px solid var(--gold);
+      background:transparent;color:var(--gold);padding:9px 16px;transition:.15s}
+    button:hover{background:var(--gold);color:var(--black-deep)}
+    button.solid{background:var(--gold);color:var(--black-deep)}
+    button.solid:hover{background:var(--gold-light)}
+    button.ghost{border-color:var(--line);color:var(--grey)}
+    button.ghost:hover{background:#222;color:var(--white)}
+    button.danger{border-color:var(--danger);color:var(--danger)}
+    button.danger:hover{background:var(--danger);color:#fff}
+    button.icon{padding:6px 11px;font-size:1rem;line-height:1}
+    button:disabled{opacity:.4;cursor:not-allowed}
+    .topbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:20px}
+    .topbar .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .grouphead{color:var(--gold);border-bottom:1px solid var(--line);padding-bottom:6px;margin:26px 0 12px;font-size:1.15rem}
+    .plan{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:#0f0f0f}
+    .plan .info{flex:1;min-width:0}
+    .plan .info .t{font-weight:600}
+    .plan .info .p{color:var(--grey);font-size:.85rem}
+    .plan .ctrls{display:flex;gap:6px;flex-wrap:wrap}
+    .badge{display:inline-block;font-size:.62rem;font-weight:800;letter-spacing:1px;text-transform:uppercase;
+      background:var(--gold);color:var(--black-deep);padding:2px 8px;border-radius:20px;margin-left:8px}
+    .notice{padding:11px 14px;border-radius:8px;margin:14px 0;font-size:.9rem;display:none}
+    .notice.show{display:block}
+    .notice.err{background:rgba(192,69,59,.15);border:1px solid var(--danger);color:#f0a49c}
+    .notice.ok{background:rgba(58,138,79,.15);border:1px solid var(--ok);color:#9fdcae}
+    .hidden{display:none}
+    .center{max-width:400px;margin:8vh auto 0}
+    .backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-start;justify-content:center;padding:5vh 16px;overflow:auto;z-index:50}
+    .backdrop.show{display:flex}
+    .modal{width:100%;max-width:620px}
+    .modal h2{color:var(--gold)}
+    .formfoot{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}
+    .spin{opacity:.6;pointer-events:none}
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN VIEW -->
+  <div id="loginView" class="wrap hidden">
+    <div class="card center">
+      <h1 style="color:var(--gold)">SolidReach</h1>
+      <p class="muted">Pricing editor — sign in to manage the pricing plans shown on the website.</p>
+      <div id="loginErr" class="notice err"></div>
+      <form id="loginForm">
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="username" required>
+        <label for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+        <div class="formfoot">
+          <button id="loginBtn" class="solid" type="submit" style="width:100%">Sign in</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- EDITOR VIEW -->
+  <div id="editorView" class="wrap hidden">
+    <div class="topbar">
+      <div>
+        <h1 style="margin:0;color:var(--gold);font-size:1.4rem">Pricing Editor</h1>
+        <span class="muted" id="whoami"></span>
+      </div>
+      <div class="actions">
+        <button id="addBtn" class="solid">+ Add plan</button>
+        <button id="seedBtn" class="ghost">Load default plans</button>
+        <button id="logoutBtn" class="ghost">Log out</button>
+      </div>
+    </div>
+
+    <div id="notice" class="notice"></div>
+
+    <div id="planList" class="card">
+      <p class="muted" id="loadingMsg">Loading plans…</p>
+    </div>
+    <p class="muted" style="margin-top:16px">Changes go live on the website immediately after you save. Use ↑ / ↓ to change the order within a group.</p>
+  </div>
+
+  <!-- EDIT / ADD MODAL -->
+  <div id="backdrop" class="backdrop">
+    <div class="card modal">
+      <h2 id="modalTitle">Edit plan</h2>
+      <input id="editId" type="hidden">
+      <div class="row2">
+        <div>
+          <label for="fCategory">Group</label>
+          <select id="fCategory">
+            <option value="packages">SolidReach Packages</option>
+            <option value="individual">Individual Services</option>
+          </select>
+        </div>
+        <div>
+          <label for="fTitle">Plan name</label>
+          <input id="fTitle" type="text" placeholder="e.g. Launch">
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label for="fPrice">Price</label>
+          <input id="fPrice" type="text" placeholder="e.g. $1,500">
+        </div>
+        <div>
+          <label for="fPeriod">Period suffix</label>
+          <input id="fPeriod" type="text" placeholder="e.g. /mo">
+        </div>
+      </div>
+      <div class="row2">
+        <div>
+          <label for="fOldPrice">Old price (optional, shown struck-through)</label>
+          <input id="fOldPrice" type="text" placeholder="e.g. $3,000">
+        </div>
+        <div>
+          <label for="fBadge">Badge (optional)</label>
+          <input id="fBadge" type="text" placeholder="e.g. MOST POPULAR">
+        </div>
+      </div>
+      <div class="check">
+        <input id="fFeatured" type="checkbox">
+        <label for="fFeatured" style="margin:0">Highlight this card (featured styling)</label>
+      </div>
+      <label for="fFeatures">Features — one per line</label>
+      <textarea id="fFeatures" placeholder="1 Cold Caller&#10;+40 qualified leads/month&#10;24/7 Client Success Manager"></textarea>
+      <div class="row2">
+        <div>
+          <label for="fCtaText">Button text</label>
+          <input id="fCtaText" type="text" placeholder="Choose Plan">
+        </div>
+        <div>
+          <label for="fCtaLink">Button link</label>
+          <input id="fCtaLink" type="text" placeholder="#contact">
+        </div>
+      </div>
+      <div class="formfoot">
+        <button id="cancelBtn" class="ghost">Cancel</button>
+        <button id="saveBtn" class="solid">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db, auth, PLANS_COLLECTION } from "./js/firebase-config.js";
+    import { CATEGORIES, DEFAULT_PLANS } from "./js/pricing-data.js";
+    import {
+      onAuthStateChanged, signInWithEmailAndPassword, signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      collection, getDocs, addDoc, updateDoc, deleteDoc, doc, writeBatch
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const $ = (id) => document.getElementById(id);
+    const catTitle = (id) => (CATEGORIES.find(c => c.id === id) || {}).title || id;
+
+    let plans = []; // {id, ...data}
+
+    /* ---------- view switching ---------- */
+    function showLogin(){ $("loginView").classList.remove("hidden"); $("editorView").classList.add("hidden"); }
+    function showEditor(){ $("loginView").classList.add("hidden"); $("editorView").classList.remove("hidden"); }
+
+    function notify(msg, kind){
+      const n = $("notice");
+      n.textContent = msg;
+      n.className = "notice show " + (kind || "ok");
+      if (kind !== "err") setTimeout(() => n.classList.remove("show"), 4000);
+    }
+
+    /* ---------- auth ---------- */
+    onAuthStateChanged(auth, (user) => {
+      if (user){ $("whoami").textContent = "Signed in as " + user.email; showEditor(); loadPlans(); }
+      else { showLogin(); }
+    });
+
+    $("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = $("loginBtn"); const err = $("loginErr");
+      err.classList.remove("show");
+      btn.disabled = true; btn.textContent = "Signing in…";
+      try {
+        await signInWithEmailAndPassword(auth, $("email").value.trim(), $("password").value);
+      } catch (ex) {
+        err.textContent = friendlyAuthError(ex);
+        err.classList.add("show");
+      } finally {
+        btn.disabled = false; btn.textContent = "Sign in";
+      }
+    });
+
+    $("logoutBtn").addEventListener("click", () => signOut(auth));
+
+    function friendlyAuthError(ex){
+      const c = (ex && ex.code) || "";
+      if (c.includes("invalid-credential") || c.includes("wrong-password") || c.includes("user-not-found"))
+        return "Wrong email or password.";
+      if (c.includes("invalid-email")) return "That email address doesn't look right.";
+      if (c.includes("too-many-requests")) return "Too many attempts. Please wait a minute and try again.";
+      if (c.includes("network")) return "Network problem — check your connection.";
+      return "Could not sign in: " + (ex.message || c);
+    }
+
+    /* ---------- load + render ---------- */
+    async function loadPlans(){
+      $("loadingMsg") && ($("loadingMsg").textContent = "Loading plans…");
+      try {
+        const snap = await getDocs(collection(db, PLANS_COLLECTION));
+        plans = [];
+        snap.forEach(d => plans.push(Object.assign({ id: d.id }, d.data())));
+        render();
+      } catch (ex) {
+        notify("Couldn't load plans: " + (ex.message || ex.code), "err");
+      }
+    }
+
+    function render(){
+      const list = $("planList");
+      list.innerHTML = "";
+      if (!plans.length){
+        list.innerHTML = '<p class="muted">No plans yet. Click <strong>“Load default plans”</strong> to add the current SolidReach set, or <strong>“+ Add plan”</strong> to start fresh.</p>';
+        return;
+      }
+      CATEGORIES.forEach(cat => {
+        const inCat = plans.filter(p => p.category === cat.id)
+                           .sort((a,b) => (Number(a.order)||0) - (Number(b.order)||0));
+        if (!inCat.length) return;
+        const h = document.createElement("h3");
+        h.className = "grouphead";
+        h.textContent = cat.title;
+        list.appendChild(h);
+
+        inCat.forEach((p, i) => list.appendChild(planRow(p, i, inCat.length)));
+      });
+    }
+
+    function planRow(p, idx, total){
+      const row = document.createElement("div");
+      row.className = "plan";
+
+      const info = document.createElement("div");
+      info.className = "info";
+      const t = document.createElement("div");
+      t.className = "t";
+      t.textContent = p.title || "(untitled)";
+      if (p.badge){ const b = document.createElement("span"); b.className = "badge"; b.textContent = p.badge; t.appendChild(b); }
+      const pr = document.createElement("div");
+      pr.className = "p";
+      pr.textContent = (p.price || "") + (p.period || "") + (p.oldPrice ? "  (was " + p.oldPrice + ")" : "") + " · " + ((p.features||[]).length) + " features";
+      info.appendChild(t); info.appendChild(pr);
+
+      const ctrls = document.createElement("div");
+      ctrls.className = "ctrls";
+      ctrls.appendChild(iconBtn("↑", "Move up", idx === 0, () => move(p, -1)));
+      ctrls.appendChild(iconBtn("↓", "Move down", idx === total - 1, () => move(p, +1)));
+      ctrls.appendChild(textBtn("Edit", "ghost", () => openModal(p)));
+      ctrls.appendChild(textBtn("Delete", "danger", () => removePlan(p)));
+
+      row.appendChild(info); row.appendChild(ctrls);
+      return row;
+    }
+
+    function iconBtn(label, title, disabled, fn){
+      const b = document.createElement("button");
+      b.className = "icon ghost"; b.textContent = label; b.title = title; b.disabled = disabled;
+      b.addEventListener("click", fn); return b;
+    }
+    function textBtn(label, cls, fn){
+      const b = document.createElement("button");
+      b.className = cls; b.textContent = label;
+      b.addEventListener("click", fn); return b;
+    }
+
+    /* ---------- reorder ---------- */
+    async function move(p, dir){
+      const inCat = plans.filter(x => x.category === p.category)
+                         .sort((a,b) => (Number(a.order)||0) - (Number(b.order)||0));
+      const i = inCat.findIndex(x => x.id === p.id);
+      const j = i + dir;
+      if (j < 0 || j >= inCat.length) return;
+      const a = inCat[i], b = inCat[j];
+      try {
+        const batch = writeBatch(db);
+        batch.update(doc(db, PLANS_COLLECTION, a.id), { order: Number(b.order)||0 });
+        batch.update(doc(db, PLANS_COLLECTION, b.id), { order: Number(a.order)||0 });
+        await batch.commit();
+        await loadPlans();
+      } catch (ex){ notify("Couldn't reorder: " + (ex.message||ex.code), "err"); }
+    }
+
+    /* ---------- modal add/edit ---------- */
+    function openModal(p){
+      $("modalTitle").textContent = p ? "Edit plan" : "Add plan";
+      $("editId").value = p ? p.id : "";
+      $("fCategory").value = p ? (p.category || "packages") : "packages";
+      $("fTitle").value = p ? (p.title || "") : "";
+      $("fPrice").value = p ? (p.price || "") : "";
+      $("fPeriod").value = p ? (p.period || "/mo") : "/mo";
+      $("fOldPrice").value = p ? (p.oldPrice || "") : "";
+      $("fBadge").value = p ? (p.badge || "") : "";
+      $("fFeatured").checked = p ? !!p.featured : false;
+      $("fFeatures").value = p ? (p.features || []).join("\n") : "";
+      $("fCtaText").value = p ? (p.ctaText || "Choose Plan") : "Choose Plan";
+      $("fCtaLink").value = p ? (p.ctaLink || "#contact") : "#contact";
+      $("backdrop").classList.add("show");
+    }
+    function closeModal(){ $("backdrop").classList.remove("show"); }
+    $("addBtn").addEventListener("click", () => openModal(null));
+    $("cancelBtn").addEventListener("click", closeModal);
+    $("backdrop").addEventListener("click", (e) => { if (e.target === $("backdrop")) closeModal(); });
+
+    $("saveBtn").addEventListener("click", async () => {
+      const id = $("editId").value;
+      const category = $("fCategory").value;
+      const title = $("fTitle").value.trim();
+      if (!title){ notify("Please enter a plan name.", "err"); return; }
+      const features = $("fFeatures").value.split("\n").map(s => s.trim()).filter(Boolean);
+      const data = {
+        category,
+        title,
+        price: $("fPrice").value.trim(),
+        period: $("fPeriod").value.trim(),
+        oldPrice: $("fOldPrice").value.trim(),
+        badge: $("fBadge").value.trim(),
+        featured: $("fFeatured").checked,
+        features,
+        ctaText: $("fCtaText").value.trim() || "Choose Plan",
+        ctaLink: $("fCtaLink").value.trim() || "#contact"
+      };
+      const btn = $("saveBtn"); btn.disabled = true; btn.textContent = "Saving…";
+      try {
+        if (id){
+          await updateDoc(doc(db, PLANS_COLLECTION, id), data);
+          notify("“" + title + "” updated.", "ok");
+        } else {
+          const inCat = plans.filter(p => p.category === category);
+          const maxOrder = inCat.reduce((m,p) => Math.max(m, Number(p.order)||0), 0);
+          data.order = maxOrder + 1;
+          await addDoc(collection(db, PLANS_COLLECTION), data);
+          notify("“" + title + "” added.", "ok");
+        }
+        closeModal();
+        await loadPlans();
+      } catch (ex){
+        notify("Couldn't save: " + (ex.message || ex.code), "err");
+      } finally {
+        btn.disabled = false; btn.textContent = "Save";
+      }
+    });
+
+    /* ---------- delete ---------- */
+    async function removePlan(p){
+      if (!confirm('Delete the "' + (p.title||"") + '" plan? This cannot be undone.')) return;
+      try {
+        await deleteDoc(doc(db, PLANS_COLLECTION, p.id));
+        notify('"' + (p.title||"") + '" deleted.', "ok");
+        await loadPlans();
+      } catch (ex){ notify("Couldn't delete: " + (ex.message||ex.code), "err"); }
+    }
+
+    /* ---------- seed defaults ---------- */
+    $("seedBtn").addEventListener("click", async () => {
+      if (plans.length){
+        if (!confirm("There are already " + plans.length + " plans. Loading defaults will ADD the default set on top (possible duplicates). Continue?")) return;
+      }
+      const btn = $("seedBtn"); btn.disabled = true; btn.textContent = "Adding…";
+      try {
+        const batch = writeBatch(db);
+        DEFAULT_PLANS.forEach(p => {
+          const ref = doc(collection(db, PLANS_COLLECTION));
+          batch.set(ref, p);
+        });
+        await batch.commit();
+        notify("Default plans loaded.", "ok");
+        await loadPlans();
+      } catch (ex){
+        notify("Couldn't load defaults: " + (ex.message || ex.code), "err");
+      } finally {
+        btn.disabled = false; btn.textContent = "Load default plans";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Solid Reach Corporation (SRC) provides specialized virtual teams for Real Estate, Roofing, and Solar professionals. Scale your business with our lead generation and appointment setting services.">
+    <meta name="keywords"
+        content="Virtual Assistants, Cold Calling, Real Estate Lead Gen, Roofing Appointments, Solar Leads, SRC, Solid Reach Corporation">
+
+    <!-- ─── Pricing Section (dynamic — loaded from Firebase) ─── -->
+    <section id="pricing" class="section-padding">
+        <div class="container">
+            <div class="text-center mb-5" data-aos="fade-up">
+                <span class="section-label centered">Pricing</span>
+                <h2 class="text-white mt-2">Our Pricing Plans</h2>
+                <p class="section-sub mt-2">Choose the plan that fits your growth</p>
+            </div>
+
+            <!-- SolidReach Packages -->
+            <div class="pricing-group" id="group-packages">
+                <h3 class="pricing-group-title" data-aos="fade-up">SolidReach Packages</h3>
+                <div class="row justify-content-center" id="pricing-packages"></div>
+            </div>
+
+            <!-- Individual Services -->
+            <div class="pricing-group" id="group-individual">
+                <h3 class="pricing-group-title" data-aos="fade-up">Individual Services</h3>
+                <div class="row justify-content-center" id="pricing-individual"></div>
+            </div>
+
+            <p class="pricing-custom-note" data-aos="fade-up">Need a custom team? <a href="#contact">Let\'s build one for you.</a></p>
+            <p id="pricing-status" class="text-center"></p>
+        </div>
+    </section>
+
+    <!-- ─── Contact Section ──────────────────────────────────── -->
+    <section id="contact" class="section-padding" style="background-color:#0D0D0D;">
+        <div class="container" data-aos="zoom-in">
+            <div class="contact-card" style="background:#111111;border:1px solid rgba(201,168,76,0.2);border-radius:24px;padding:70px 60px;max-width:680px;margin:0 auto;text-align:center;">
+                <span class="section-label centered" style="color:#C9A84C;">Book a Call</span>
+                <h2 class="mt-3" style="color:#fff;">Ready to Start?</h2>
+                <p class="contact-sub" style="color:#AAAAAA;">Book a discovery call with our team today.</p>
+                <a href="https://calendly.com/solidreachco-info/30min" target="_blank"
+                   style="display:inline-flex;align-items:center;gap:12px;background:#C9A84C;color:#080808;font-size:0.92rem;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;padding:16px 44px;border-radius:8px;border:none;box-shadow:0 10px 28px rgba(201,168,76,0.3);text-decoration:none;margin-bottom:8px;transition:all 0.3s;">
+                    <i class="fas fa-calendar-alt"></i> BOOK A DISCOVERY CALL
+                </a>
+                <p class="contact-note" style="color:#AAAAAA;font-size:0.85rem;margin-top:18px;">A 30-minute call to discuss your needs — no commitment required.</p>
+                <a href="mailto:info@solidreachco.com" style="display:inline-flex;align-items:center;gap:8px;color:#C9A84C;font-size:0.92rem;margin-top:28px;text-decoration:none;">
+                    <i class="fas fa-envelope"></i> info@solidreachco.com
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ─── Footer ────────────────────────────────────────────── -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <!-- Brand -->
+                <div class="col-lg-4 col-md-6 mb-4 footer-brand">
+                    <img src="assets/logo-transparent.png" alt="SRC Logo">
+                    <p class="footer-tagline">Specialized virtual teams for Real Estate, Roofing, and Solar professionals.</p>
+                </div>
+                <!-- Quick Links -->
+                <div class="col-lg-2 col-md-3 col-6 mb-4 footer-links">
+                    <h6>Navigate</h6>
+                    <ul>
+                        <li><a href="#hero">Home</a></li>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#why-us">Why Us</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                    </ul>
+                </div>
+                <!-- Services -->
+                <div class="col-lg-3 col-md-3 col-6 mb-4 footer-links">
+                    <h6>Services</h6>
+                    <ul>
+                        <li><a href="#services">Real Estate</a></li>
+                        <li><a href="#services">Roofing</a></li>
+                        <li><a href="#services">Solar</a></li>
+                        <li><a href="#contact">Enterprise</a></li>
+                    </ul>
+                </div>
+                <!-- Contact -->
+                <div class="col-lg-3 col-md-4 mb-4 footer-links">
+                    <h6>Connect</h6>
+                    <div class="social-links mb-3">
+                        <a href="https://www.facebook.com/share/1CLM49Rdy8/" target="_blank" aria-label="Facebook">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://www.instagram.com/solid.reach?igsh=MWR0bXF0bDRnbmRmOQ==" target="_blank" aria-label="Instagram">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                    <p style="color: var(--grey); font-size: 0.85rem;">
+                        <a href="mailto:info@solidreachco.com" style="color: var(--gold); text-decoration: none;">
+                            info@solidreachco.com
+                        </a>
+                    </p>
+                    <div class="mt-3">
+                        <a href="#contact" class="btn-gold" style="font-size: 0.8rem; padding: 9px 20px;">
+                            Get a Quote
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Bottom -->
+            <div class="footer-bottom d-flex flex-column flex-md-row align-items-center justify-content-between">
+                <p class="footer-copy mb-2 mb-md-0">&copy; 2026 Solid Reach Corporation. All rights reserved.</p>
+                <p class="footer-copy">Built for performance. Designed with purpose.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/bundle.js"></script>
+    <script src="js/script.js"></script>
+    <!-- Dynamic pricing (Firebase) — ES module -->
+    <script type="module" src="js/pricing.js"></script>
+</body>
+
+</html>

@@ -1,93 +1,127 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // Initialize AOS
-    AOS.init({
-        duration: 600,
-        easing: 'ease-in-out',
-        once: true,
-        mirror: false
-    });
+/* ============================================================
+   SRC V2 — script.js
+   - Loader dismiss
+   - Navbar: scrolled class + active link on scroll
+   - AOS init
+   - Counter animation (IntersectionObserver)
+   ============================================================ */
 
-    // Loader Logic
-    const loader = document.getElementById('loader');
-    const body = document.body;
+document.addEventListener('DOMContentLoaded', function () {
 
-    // Simulate loading time (or wait for resources)
+  /* ── Loader ──────────────────────────────────────────────── */
+  const loader = document.getElementById('loader');
+  if (loader) {
     window.addEventListener('load', function () {
-        setTimeout(function () {
-            loader.classList.add('hidden');
-            body.classList.remove('loading');
-
-            // Remove loader from DOM after transition for performance
-            setTimeout(function () {
-                loader.style.display = 'none';
-            }, 500);
-        }, 800); // 800ms delay for visual effect
+      setTimeout(function () {
+        loader.classList.add('hidden');
+        document.body.classList.remove('loading');
+      }, 900);
     });
+  }
 
-    // Navbar Scroll Effect
-    const navbar = document.querySelector('.navbar');
+  /* ── Navbar: add .scrolled on scroll ─────────────────────── */
+  const navbar = document.getElementById('mainNav');
+  function handleNavbarScroll() {
+    if (window.scrollY > 60) {
+      navbar && navbar.classList.add('scrolled');
+    } else {
+      navbar && navbar.classList.remove('scrolled');
+    }
+  }
+  window.addEventListener('scroll', handleNavbarScroll, { passive: true });
 
-    window.addEventListener('scroll', function () {
-        if (window.scrollY > 50) {
-            navbar.style.boxShadow = "0 2px 10px rgba(0,0,0,0.3)";
-        } else {
-            navbar.style.boxShadow = "none";
+  /* ── Navbar: active link highlight ──────────────────────── */
+  const sections = document.querySelectorAll('section[id], header[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  function setActiveLink() {
+    const scrollPos = window.scrollY + 100;
+    sections.forEach(function (section) {
+      if (
+        scrollPos >= section.offsetTop &&
+        scrollPos < section.offsetTop + section.offsetHeight
+      ) {
+        navLinks.forEach(function (link) {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === '#' + section.id) {
+            link.classList.add('active');
+          }
+        });
+      }
+    });
+  }
+  window.addEventListener('scroll', setActiveLink, { passive: true });
+
+  /* ── Smooth scroll for anchor clicks ────────────────────── */
+  document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+    anchor.addEventListener('click', function (e) {
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Close mobile menu if open
+        const navCollapse = document.getElementById('navbarNav');
+        if (navCollapse && navCollapse.classList.contains('show')) {
+          const toggler = document.querySelector('.navbar-toggler');
+          toggler && toggler.click();
         }
+      }
     });
+  });
 
-    // ScrollSpy
-    const sections = document.querySelectorAll('section, header');
-    const navLinks = document.querySelectorAll('.nav-link');
-
-    window.addEventListener('scroll', () => {
-        let current = '';
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop;
-            const sectionHeight = section.clientHeight;
-            if (pageYOffset >= (sectionTop - 150)) {
-                current = section.getAttribute('id');
-            }
-        });
-
-        navLinks.forEach(li => {
-            li.classList.remove('active');
-            if (li.getAttribute('href').includes(current)) {
-                li.classList.add('active');
-            }
-        });
+  /* ── AOS Init ─────────────────────────────────────────────── */
+  if (typeof AOS !== 'undefined') {
+    AOS.init({
+      duration: 700,
+      once: true,
+      easing: 'ease-out-cubic',
+      offset: 60
     });
+  }
 
-    // Smooth Scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-
-            const targetId = this.getAttribute('href');
-            if (targetId === '#' || targetId === '#contact') {
-                // Special handling for pricing buttons going to contact
-                // Fallthrough to standard logic but ensure target is correct
-            }
-
-            const targetElement = document.querySelector(targetId);
-
-            if (targetElement) {
-                // Adjust for fixed navbar
-                const headerOffset = 70;
-                const elementPosition = targetElement.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
-
-                window.scrollTo({
-                    top: offsetPosition,
-                    behavior: "smooth"
-                });
-
-                // Close mobile menu if open
-                const navbarToggler = document.querySelector('.navbar-toggler');
-                const navbarCollapse = document.querySelector('.navbar-collapse');
-                if (navbarCollapse.classList.contains('show')) {
-                    navbarToggler.click();
-                }
-            }
+  /* ── Counter Animation ────────────────────────────────────── */
+  const countEls = document.querySelectorAll('.count-up');
+  if (countEls.length > 0) {
+    const observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            animateCounter(entry.target);
+            observer.unobserve(entry.target);
+          }
         });
+      },
+      { threshold: 0.5 }
+    );
+
+    countEls.forEach(function (el) {
+      observer.observe(el);
     });
+  }
+
+  function animateCounter(el) {
+    const target = parseInt(el.getAttribute('data-target'), 10);
+    const duration = 1600; // ms
+    const stepTime = 16;   // ~60fps
+    const steps = Math.ceil(duration / stepTime);
+    const increment = target / steps;
+    let current = 0;
+    let step = 0;
+
+    const timer = setInterval(function () {
+      step++;
+      // Ease-out: slow down near end
+      current = target * easeOut(step / steps);
+      el.textContent = Math.round(current);
+      if (step >= steps) {
+        el.textContent = target;
+        clearInterval(timer);
+      }
+    }, stepTime);
+  }
+
+  function easeOut(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
 });

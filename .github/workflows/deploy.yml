@@ -1,0 +1,67 @@
+name: Deploy website to cPanel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cpanel-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check deployment settings
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_SERVER_DIR: ${{ secrets.FTP_SERVER_DIR }}
+        run: |
+          for setting in FTP_SERVER FTP_USERNAME FTP_PASSWORD FTP_SERVER_DIR; do
+            if [ -z "${!setting}" ]; then
+              echo "::error::Add the $setting repository secret in Settings > Secrets and variables > Actions."
+              exit 1
+            fi
+          done
+          if [[ "$FTP_SERVER_DIR" != */ ]]; then
+            echo "::error::FTP_SERVER_DIR must end with a slash."
+            exit 1
+          fi
+
+      - name: Checkout website
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Prepare public files
+        run: |
+          mkdir _site
+          cp -R assets css js _site/
+          find . -maxdepth 1 -type f -name '*.html' -exec cp {} _site/ \;
+          for file in .htaccess robots.txt sitemap.xml favicon.ico; do
+            if [ -f "$file" ]; then
+              cp "$file" _site/
+            fi
+          done
+          test -s _site/index.html
+
+      - name: Deploy via FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          protocol: ftps
+          port: 21
+          local-dir: ./_site/
+          dangerous-clean-slate: false
+          security: strict
