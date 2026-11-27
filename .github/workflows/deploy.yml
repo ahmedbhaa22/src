@@ -44,7 +44,8 @@ jobs:
       - name: Prepare public files
         run: |
           mkdir _site
-          cp -R assets css js _site/
+          cp -R assets css js api _site/
+          rm -f _site/api/config.sample.php
           find . -maxdepth 1 -type f -name '*.html' -exec cp {} _site/ \;
           for file in .htaccess robots.txt sitemap.xml favicon.ico; do
             if [ -f "$file" ]; then
@@ -52,6 +53,33 @@ jobs:
             fi
           done
           test -s _site/index.html
+
+      - name: Write form email settings (server only, never committed)
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          LEAD_TO: ${{ secrets.LEAD_TO }}
+        run: |
+          if [ -z "$SMTP_HOST" ] || [ -z "$SMTP_USER" ] || [ -z "$SMTP_PASS" ] || [ -z "$LEAD_TO" ]; then
+            echo "::warning::SMTP secrets are missing, so the request form falls back to the visitor's email app."
+            exit 0
+          fi
+          php -r '
+            $c = [
+              "smtp_host" => getenv("SMTP_HOST"),
+              "smtp_port" => (int) (getenv("SMTP_PORT") ?: 465),
+              "smtp_secure" => "auto",
+              "smtp_user" => getenv("SMTP_USER"),
+              "smtp_pass" => getenv("SMTP_PASS"),
+              "from_email" => getenv("SMTP_FROM") ?: getenv("SMTP_USER"),
+              "lead_to" => getenv("LEAD_TO"),
+            ];
+            file_put_contents("_site/api/config.php", "<?php\nreturn " . var_export($c, true) . ";\n");
+          '
+          php -l _site/api/config.php
 
       - name: Deploy via FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0

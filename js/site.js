@@ -110,24 +110,60 @@
     f.appendChild(field('fm-notes', 'Anything else we should know?', 'textarea', 'Markets, goals, current tools…', false));
     var s = h('button', 'fm-submit', 'Submit Request'); s.type = 'submit';
     f.appendChild(s);
+    /* honeypot: hidden from people, bots tend to fill it */
+    var hp = h('div', 'fm-hp'); hp.setAttribute('aria-hidden', 'true');
+    var hpi = document.createElement('input'); hpi.type = 'text'; hpi.name = 'website'; hpi.tabIndex = -1; hpi.autocomplete = 'off';
+    hp.appendChild(hpi); f.appendChild(hp);
+    var openedAt = Date.now();
+    var DONE_ICON = '<svg aria-hidden="true" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6"/></svg>';
+    var err = h('p', 'fm-err'); err.setAttribute('role', 'alert'); err.hidden = true;
+    f.insertBefore(err, s);
+
     f.addEventListener('submit', function (e) {
       e.preventDefault();
       var v = function (id) { return (f.querySelector('#' + id).value || '').trim(); };
-      var lines = [
-        'Package: ' + plan.title + (priceLabel ? ' (' + priceLabel + ')' : ''),
-        'Solution: ' + (cat.group || cat.title || ''),
-        'Needs: ' + (picked(f, NEEDS).join(', ') || '-'),
-      ];
-      if (cat.industries && cat.industries.length) lines.push('Industry: ' + (picked(f, IND).join(', ') || '-'));
-      lines.push('', 'Name: ' + v('fm-name'), 'Company: ' + (v('fm-company') || '-'), 'Email: ' + v('fm-email'), 'Phone: ' + v('fm-phone'), '', 'Notes: ' + (v('fm-notes') || '-'));
-      var subject = 'Package request: ' + plan.title + ' — ' + v('fm-name');
-      /* Sends through the visitor's email app for now. A server-side
-         sender (PHP on cPanel) can replace this without touching the form. */
-      window.location.href = 'mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(lines.join('\n'));
-      mBody.innerHTML = '<div class="fm-done"><svg aria-hidden="true" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6"/></svg><h4>Almost done</h4><p>Your email app opened with your request ready. Press send and our team will call you at the number you provided.</p></div>';
-      var p = h('p', 'fm-mock'); p.appendChild(document.createTextNode('No email app? Write to us at '));
-      var a = h('a', null, CONTACT_EMAIL); a.href = 'mailto:' + CONTACT_EMAIL; p.appendChild(a);
-      mBody.querySelector('.fm-done').appendChild(p);
+      var industry = cat.industries && cat.industries.length ? (picked(f, IND)[0] || '') : '';
+      var payload = {
+        package: plan.title, price: priceLabel, solution: cat.group || cat.title || '',
+        needs: picked(f, NEEDS), industry: industry,
+        name: v('fm-name'), company: v('fm-company'), email: v('fm-email'), phone: v('fm-phone'), notes: v('fm-notes'),
+        website: hpi.value, elapsed: Date.now() - openedAt
+      };
+      function mailtoHref() {
+        var lines = ['Package: ' + payload.package + (priceLabel ? ' (' + priceLabel + ')' : ''), 'Solution: ' + payload.solution, 'Needs: ' + (payload.needs.join(', ') || '-')];
+        if (industry) lines.push('Industry: ' + industry);
+        lines.push('', 'Name: ' + payload.name, 'Company: ' + (payload.company || '-'), 'Email: ' + payload.email, 'Phone: ' + payload.phone, '', 'Notes: ' + (payload.notes || '-'));
+        return 'mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent('Package request: ' + payload.package + ' — ' + payload.name) + '&body=' + encodeURIComponent(lines.join('\n'));
+      }
+      function done(title, text, withMail) {
+        mBody.innerHTML = '<div class="fm-done">' + DONE_ICON + '<h4></h4><p></p></div>';
+        mBody.querySelector('h4').textContent = title; mBody.querySelector('.fm-done p').textContent = text;
+        if (withMail) {
+          var p = h('p', 'fm-mock'); p.appendChild(document.createTextNode('No email app? Write to us at '));
+          var a = h('a', null, CONTACT_EMAIL); a.href = 'mailto:' + CONTACT_EMAIL; p.appendChild(a);
+          mBody.querySelector('.fm-done').appendChild(p);
+        }
+      }
+      function fallbackToEmail() {
+        window.location.href = mailtoHref();
+        done('Almost done', 'Your email app opened with your request ready. Press send and our team will call you at the number you provided.', true);
+      }
+      function showErr(msg) { err.textContent = msg; err.hidden = false; s.disabled = false; s.textContent = 'Submit Request'; }
+
+      err.hidden = true; s.disabled = true; s.textContent = 'Sending…';
+      fetch('api/lead.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, j: j }; }); })
+        .then(function (res) {
+          if (res.j.ok) return done('Request received', 'Thanks! Our team will call you at the number you provided.', false);
+          if (res.status === 422) {
+            var names = { email: 'email', phone: 'phone number', name: 'full name' };
+            var fields = (res.j.fields || []).map(function (k) { return names[k] || k; });
+            return showErr('Please check your ' + (fields.join(', ') || 'details') + ' and try again.');
+          }
+          if (res.status === 429) return showErr('We already received several requests from you. Please try again later or email ' + CONTACT_EMAIL + '.');
+          fallbackToEmail(); /* endpoint not set up or mail server down */
+        })
+        .catch(fallbackToEmail);
     });
     mBody.appendChild(f);
     modal.hidden = false;

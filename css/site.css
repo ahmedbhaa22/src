@@ -228,6 +228,9 @@ footer img{height:28px;width:auto}
 .foot-links a:hover{color:var(--blue)}
 .pricing-status{text-align:center;color:var(--muted);padding:40px 0}
 .fm-mock a{color:var(--fm-accent)}
+.fm-hp{position:absolute!important;left:-9999px;width:1px;height:1px;overflow:hidden}
+.fm-err{margin:0;color:#B42318;background:#FEF3F2;border-radius:10px;padding:10px 14px;font-size:14.5px}
+.fm-submit:disabled{opacity:.7;cursor:wait;transform:none}
 
 @media (max-width:640px){
   .nav .wrap{flex-wrap:nowrap;min-height:64px}
