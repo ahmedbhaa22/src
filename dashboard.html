@@ -110,11 +110,8 @@
       <input id="editId" type="hidden">
       <div class="row2">
         <div>
-          <label for="fCategory">Group</label>
-          <select id="fCategory">
-            <option value="packages">SolidReach Packages</option>
-            <option value="individual">Individual Services</option>
-          </select>
+          <label for="fCategory">Team type</label>
+          <select id="fCategory"></select>
         </div>
         <div>
           <label for="fTitle">Plan name</label>
@@ -147,7 +144,8 @@
       </div>
       <label for="fFeatures">Features — one per line</label>
       <textarea id="fFeatures" placeholder="1 Cold Caller&#10;+40 qualified leads/month&#10;24/7 Client Success Manager"></textarea>
-      <div class="row2">
+      <!-- Button text/link are not used by the current website (every card opens the request form). -->
+      <div class="row2 hidden">
         <div>
           <label for="fCtaText">Button text</label>
           <input id="fCtaText" type="text" placeholder="Choose Plan">
@@ -175,7 +173,13 @@
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
     const $ = (id) => document.getElementById(id);
-    const catTitle = (id) => (CATEGORIES.find(c => c.id === id) || {}).title || id;
+    const catTitle = (id) => { const c = CATEGORIES.find(c => c.id === id); return c ? c.label : id; };
+    const DEFAULT_CAT = CATEGORIES[0].id;
+    // Team type dropdown is built from js/pricing-data.js so it always matches the site.
+    CATEGORIES.forEach(c => {
+      const o = document.createElement("option"); o.value = c.id; o.textContent = c.label;
+      $("fCategory").appendChild(o);
+    });
 
     let plans = []; // {id, ...data}
 
@@ -249,11 +253,24 @@
         if (!inCat.length) return;
         const h = document.createElement("h3");
         h.className = "grouphead";
-        h.textContent = cat.title;
+        h.textContent = cat.label;
         list.appendChild(h);
 
         inCat.forEach((p, i) => list.appendChild(planRow(p, i, inCat.length)));
       });
+
+      // Plans saved under an old group (from the previous website) are not shown on the
+      // site any more. List them so they can be edited into a team type or deleted.
+      const known = new Set(CATEGORIES.map(c => c.id));
+      const old = plans.filter(p => !known.has(p.category))
+                       .sort((a,b) => (Number(a.order)||0) - (Number(b.order)||0));
+      if (old.length){
+        const h = document.createElement("h3");
+        h.className = "grouphead";
+        h.textContent = "Old plans (not shown on the website): edit to move into a team type, or delete";
+        list.appendChild(h);
+        old.forEach((p, i) => list.appendChild(planRow(p, i, old.length)));
+      }
     }
 
     function planRow(p, idx, total){
@@ -314,7 +331,7 @@
     function openModal(p){
       $("modalTitle").textContent = p ? "Edit plan" : "Add plan";
       $("editId").value = p ? p.id : "";
-      $("fCategory").value = p ? (p.category || "packages") : "packages";
+      $("fCategory").value = (p && CATEGORIES.some(c => c.id === p.category)) ? p.category : DEFAULT_CAT;
       $("fTitle").value = p ? (p.title || "") : "";
       $("fPrice").value = p ? (p.price || "") : "";
       $("fPeriod").value = p ? (p.period || "/mo") : "/mo";
