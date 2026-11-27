@@ -76,6 +76,7 @@ function render(root, plans) {
       const bt = h("b"); bt.appendChild(h("i", "va-dot")); bt.appendChild(document.createTextNode(c.title)); a.appendChild(bt);
       a.appendChild(h("small", null, fromLabel(ps)));
       const bar = h("span", "va-bar"); bar.appendChild(h("i")); a.appendChild(bar);
+      a.appendChild(h("span", "va-here", "Viewing"));
       li.appendChild(a); nav.appendChild(li);
     });
     side.appendChild(nav);
@@ -104,6 +105,15 @@ function render(root, plans) {
   return groups.length;
 }
 
+/* exactly one highlighted team type per solution; it stays on until another one takes over */
+function setActive(link) {
+  link.closest(".va-nav").querySelectorAll("a").forEach((a) => {
+    const on = a === link;
+    a.classList.toggle("on", on);
+    if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+  });
+}
+
 function animate(root) {
   if (!SR.G) return;
   const gsap = window.gsap, ScrollTrigger = window.ScrollTrigger;
@@ -119,7 +129,8 @@ function animate(root) {
     ScrollTrigger.create({ trigger: cw, start: "top 140px", end: "bottom 200px", toggleClass: { targets: tb, className: "stuck" } });
     const link = root.querySelector('.va-nav a[data-t="' + cw.id + '"]');
     const bar = link.querySelector(".va-bar i");
-    ScrollTrigger.create({ trigger: cw, start: "top 60%", end: "bottom 60%", toggleClass: { targets: link, className: "on" },
+    ScrollTrigger.create({ trigger: cw, start: "top 60%", end: "bottom 60%",
+      onToggle: (s) => { if (s.isActive) setActive(link); },
       onUpdate: (s) => { bar.style.transform = "scaleX(" + s.progress.toFixed(3) + ")"; } });
   });
   /* prices count up from zero when they scroll into view */
@@ -154,6 +165,10 @@ async function loadPlans() {
     root.appendChild(h("p", "pricing-status", "Pricing is being updated. Please check back shortly or book a free consultation."));
     return;
   }
+  root.querySelectorAll(".va-nav").forEach((nav) => {
+    const first = nav.querySelector("a"); if (first) setActive(first);
+    nav.addEventListener("click", (e) => { const a = e.target.closest("a"); if (a) setActive(a); });
+  });
   animate(root);
   SR.pricingReady();
 })();

@@ -285,6 +285,12 @@
         imgs.forEach(function (im, k) { im.classList.toggle('on', k === i); }); tag.textContent = tags[i]; } });
   });
 
+  /* top nav: underline the section you are in */
+  document.querySelectorAll('.nav-links a:not(.btn)').forEach(function (a) {
+    var sec = document.getElementById(a.getAttribute('href').slice(1)); if (!sec) return;
+    ScrollTrigger.create({ trigger: sec, start: 'top 45%', end: 'bottom 45%', toggleClass: { targets: a, className: 'on' } });
+  });
+
   /* CTA types itself when reached */
   var ct = document.getElementById('ctaType'), ctText = ct.textContent;
   ScrollTrigger.create({ trigger: ct, start: 'top 85%', once: true, onEnter: function () { type(ct, ctText, 45); } });
