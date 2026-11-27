@@ -1,99 +1,159 @@
 /* ============================================================
-   SolidReach — public pricing loader
-   Reads pricing plans live from Firestore and renders them into
-   the #pricing section. All text is inserted with textContent,
-   so nothing an editor types can break the page layout.
+   SolidReach — public pricing (Typewriter design, Sidebar layout)
+   Reads plans live from Firestore and builds the #plans section:
+   one chapter per solution with a sticky sidebar, and one block
+   per team type with its own accent colour.
+   All text is inserted with textContent, so nothing an editor
+   types can break the page.
    ============================================================ */
 
 import { db, PLANS_COLLECTION } from "./firebase-config.js";
-import { CATEGORIES } from "./pricing-data.js";
-import {
-  collection, getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+import { GROUPS, CATEGORIES, DEFAULT_PLANS } from "./pricing-data.js";
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-function el(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text != null) node.textContent = text;
-  return node;
+const SR = window.SR;
+const h = SR.h, money = SR.money;
+const CHECK = '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>';
+
+const two = (n) => (n < 10 ? "0" : "") + n;
+const num = (s) => { const v = parseFloat(String(s || "").replace(/[^0-9.]/g, "")); return isFinite(v) ? v : null; };
+const byOrder = (a, b) => (Number(a.order) || 0) - (Number(b.order) || 0);
+
+function fromLabel(plans) {
+  const vals = plans.map((p) => num(p.price)).filter((v) => v != null);
+  return plans.length + " plan" + (plans.length === 1 ? "" : "s") + (vals.length ? " · from " + money(Math.min(...vals)) + "/mo" : "");
 }
 
-function buildCard(plan) {
-  const col = el("div", "col-lg-4 col-md-6 mb-4");
+function card(p, c, group) {
+  const a = h("article", "p-card" + (p.featured ? " is-featured" : ""));
+  const top = h("div", "p-top");
+  if (p.badge) top.appendChild(h("span", "p-badge", p.badge));
+  top.appendChild(h("span", "p-name", p.title || ""));
+  a.appendChild(top);
 
-  const card = el("div", "pricing-card" + (plan.featured ? " featured" : ""));
+  const pr = h("div", "p-price");
+  const amt = h("span", "p-amt", p.price || "");
+  const v = num(p.price);
+  if (v != null && /^\s*\$/.test(p.price || "")) amt.dataset.value = v;
+  pr.appendChild(amt);
+  if (p.period) pr.appendChild(h("span", "p-per", p.period === "/mo" ? "/month" : p.period));
+  if (p.oldPrice) pr.appendChild(h("s", "p-old", p.oldPrice));
+  a.appendChild(pr);
 
-  if (plan.badge) {
-    card.appendChild(el("span", "featured-badge", plan.badge));
-  }
+  const ul = h("ul", "p-feats");
+  (p.features || []).forEach((f) => { const li = h("li"); li.innerHTML = CHECK; li.appendChild(h("span", null, f)); ul.appendChild(li); });
+  a.appendChild(ul);
 
-  const header = el("div", "pricing-header");
-  header.appendChild(el("h3", null, plan.title || ""));
+  const b = h("button", "p-cta", "Get Started →"); b.type = "button";
+  b.addEventListener("click", () => SR.openForm(
+    { title: p.title || "", priceText: p.price || "", period: p.period || "" },
+    { group: c.label, title: c.title, needs: c.needs, industries: c.industries }));
+  a.appendChild(b);
+  return a;
+}
 
-  const price = el("div", "price", plan.price || "");
-  if (plan.period) price.appendChild(el("span", null, plan.period));
-  header.appendChild(price);
+function render(root, plans) {
+  root.className = "va";
+  root.innerHTML = "";
+  const groups = GROUPS.map((g) => ({
+    g, cats: CATEGORIES.filter((c) => c.groupId === g.id)
+      .map((c) => ({ c, plans: plans.filter((p) => p.category === c.id).sort(byOrder) }))
+      .filter((x) => x.plans.length)
+  })).filter((x) => x.cats.length);
 
-  if (plan.oldPrice) {
-    header.appendChild(el("span", "price-old", plan.oldPrice));
-  }
-  card.appendChild(header);
+  groups.forEach(({ g, cats }, gi) => {
+    const ch = h("section", "va-ch va-" + g.id);
+    const grid = h("div", "va-grid");
 
-  const ul = el("ul", "pricing-features");
-  (plan.features || []).forEach(function (feat) {
-    const li = document.createElement("li");
-    const icon = document.createElement("i");
-    icon.className = "fas fa-check";
-    li.appendChild(icon);
-    li.appendChild(document.createTextNode(" " + feat));
-    ul.appendChild(li);
+    const side = h("aside", "va-side");
+    side.appendChild(h("span", "va-kicker", "Solution " + (gi + 1) + " of " + groups.length));
+    side.appendChild(h("h3", "va-title", g.title));
+    const ph = h("div", "va-photo"); const im = h("img"); im.src = g.img; im.alt = ""; im.loading = "lazy"; ph.appendChild(im); side.appendChild(ph);
+    side.appendChild(h("p", "va-blurb", g.blurb));
+    const nav = h("ol", "va-nav");
+    cats.forEach(({ c, plans: ps }) => {
+      const li = h("li"); const a = h("a"); a.href = "#" + c.id; a.dataset.t = c.id; a.style.setProperty("--acc", c.accent);
+      const bt = h("b"); bt.appendChild(h("i", "va-dot")); bt.appendChild(document.createTextNode(c.title)); a.appendChild(bt);
+      a.appendChild(h("small", null, fromLabel(ps)));
+      const bar = h("span", "va-bar"); bar.appendChild(h("i")); a.appendChild(bar);
+      li.appendChild(a); nav.appendChild(li);
+    });
+    side.appendChild(nav);
+    grid.appendChild(side);
+
+    const main = h("div", "va-main");
+    cats.forEach(({ c, plans: ps }, ci) => {
+      const cw = h("div", "va-cat"); cw.id = c.id; cw.style.setProperty("--acc", c.accent);
+      const bar = h("div", "va-type");
+      bar.appendChild(h("span", "va-num", two(ci + 1)));
+      const tt = h("div", "va-tt");
+      tt.appendChild(h("span", "va-tk", cats.length > 1 ? "Type " + (ci + 1) + " of " + cats.length + " · " + g.short : g.short));
+      tt.appendChild(h("h4", "va-tname", c.title));
+      bar.appendChild(tt);
+      bar.appendChild(h("span", "pc-meta", fromLabel(ps)));
+      cw.appendChild(bar);
+      if (c.desc) cw.appendChild(h("p", "pc-desc va-desc", c.desc));
+      const grd = h("div", "p-grid"); ps.forEach((p) => grd.appendChild(card(p, c, g))); cw.appendChild(grd);
+      if (c.note) cw.appendChild(h("p", "pc-note", c.note));
+      main.appendChild(cw);
+    });
+    grid.appendChild(main);
+    ch.appendChild(grid);
+    root.appendChild(ch);
   });
-  card.appendChild(ul);
-
-  const cta = el("a", "btn-pricing", plan.ctaText || "Choose Plan");
-  cta.setAttribute("href", plan.ctaLink || "#contact");
-  card.appendChild(cta);
-
-  col.appendChild(card);
-  return col;
+  return groups.length;
 }
 
-function sortPlans(a, b) {
-  const oa = Number(a.order) || 0;
-  const ob = Number(b.order) || 0;
-  return oa - ob;
+function animate(root) {
+  if (!SR.G) return;
+  const gsap = window.gsap, ScrollTrigger = window.ScrollTrigger;
+  root.querySelectorAll(".va-ch").forEach((ch) => {
+    gsap.from(ch.querySelectorAll(".va-side > *"), { y: 30, opacity: 0, stagger: 0.08, duration: 0.7, ease: "power2.out", clearProps: "transform,opacity", scrollTrigger: { trigger: ch, start: "top 75%" } });
+    gsap.fromTo(ch.querySelector(".va-photo img"), { yPercent: -8, scale: 1.15 }, { yPercent: 8, scale: 1.15, ease: "none", scrollTrigger: { trigger: ch, start: "top bottom", end: "bottom top", scrub: true } });
+  });
+  root.querySelectorAll(".va-cat").forEach((cw) => {
+    gsap.from(cw.querySelectorAll(".p-card"), { y: 40, opacity: 0, duration: 0.65, stagger: 0.08, ease: "power2.out", clearProps: "transform,opacity", scrollTrigger: { trigger: cw, start: "top 82%" } });
+    const tb = cw.querySelector(".va-type");
+    gsap.from(tb, { clipPath: "inset(0 100% 0 0 round 18px)", duration: 0.9, ease: "power3.inOut", clearProps: "clipPath", scrollTrigger: { trigger: cw, start: "top 80%" } });
+    gsap.from(tb.querySelector(".va-num"), { yPercent: 110, opacity: 0, duration: 0.7, delay: 0.35, ease: "back.out(2)", clearProps: "transform,opacity", scrollTrigger: { trigger: cw, start: "top 80%" } });
+    ScrollTrigger.create({ trigger: cw, start: "top 140px", end: "bottom 200px", toggleClass: { targets: tb, className: "stuck" } });
+    const link = root.querySelector('.va-nav a[data-t="' + cw.id + '"]');
+    const bar = link.querySelector(".va-bar i");
+    ScrollTrigger.create({ trigger: cw, start: "top 60%", end: "bottom 60%", toggleClass: { targets: link, className: "on" },
+      onUpdate: (s) => { bar.style.transform = "scaleX(" + s.progress.toFixed(3) + ")"; } });
+  });
+  /* prices count up from zero when they scroll into view */
+  root.querySelectorAll(".p-amt[data-value]").forEach((el) => {
+    const target = +el.dataset.value, o = { v: 0 }, final = el.textContent;
+    gsap.to(o, { v: target, duration: 1.3, ease: "power3.out", scrollTrigger: { trigger: el, start: "top 92%", once: true },
+      onUpdate: () => { el.textContent = money(o.v); }, onComplete: () => { el.textContent = final; } });
+  });
 }
 
-async function loadPricing() {
-  const status = document.getElementById("pricing-status");
-
+async function loadPlans() {
   try {
     const snap = await getDocs(collection(db, PLANS_COLLECTION));
     const plans = [];
-    snap.forEach(function (doc) { plans.push(doc.data()); });
-
-    let rendered = 0;
-    CATEGORIES.forEach(function (cat) {
-      const group = document.getElementById("group-" + cat.id);
-      const row = document.getElementById("pricing-" + cat.id);
-      if (!row) return;
-      row.innerHTML = "";
-
-      const inCat = plans.filter(function (p) { return p.category === cat.id; });
-      inCat.sort(sortPlans);
-
-      inCat.forEach(function (p) { row.appendChild(buildCard(p)); });
-      rendered += inCat.length;
-
-      // Hide the whole group (incl. its title) when it has no plans.
-      if (group) group.style.display = inCat.length ? "" : "none";
-    });
-
-    if (status) status.textContent = rendered ? "" : "Pricing is being updated — please check back shortly.";
+    snap.forEach((d) => plans.push(d.data()));
+    const ids = new Set(CATEGORIES.map((c) => c.id));
+    const current = plans.filter((p) => ids.has(p.category));
+    if (current.length) return current;
+    console.warn("[pricing] No plans for the current team types in Firebase yet; showing the default plans.");
   } catch (err) {
-    console.error("[pricing] failed to load from Firebase:", err);
-    if (status) status.textContent = "Pricing couldn't be loaded right now. Please refresh, or contact us for current pricing.";
+    console.error("[pricing] failed to load from Firebase, showing the default plans:", err);
   }
+  return DEFAULT_PLANS;
 }
 
-document.addEventListener("DOMContentLoaded", loadPricing);
+(async function () {
+  const root = document.getElementById("plans");
+  if (!root) return;
+  const plans = await loadPlans();
+  if (!render(root, plans)) {
+    root.innerHTML = "";
+    root.appendChild(h("p", "pricing-status", "Pricing is being updated. Please check back shortly or book a free consultation."));
+    return;
+  }
+  animate(root);
+  SR.pricingReady();
+})();

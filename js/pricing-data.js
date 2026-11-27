@@ -1,59 +1,59 @@
 /* ============================================================
-   SolidReach — pricing data helpers (SHARED)
-   - CATEGORIES: the two groups + their display titles + order
-   - DEFAULT_PLANS: the starter content used by the dashboard's
-     "Load default plans" button (first-time seeding only).
-   Editors change everything from the dashboard after that; this
-   file is only the initial seed.
+   SolidReach — pricing data helpers (SHARED by the site + dashboard)
+   - GROUPS: the two solutions shown on the site (order = display order)
+   - CATEGORIES: the team types inside each solution. A plan's
+     `category` field must be one of these ids.
+   - DEFAULT_PLANS: starter content used by the dashboard's
+     "Load default plans" button. The public site also falls back
+     to these if Firebase has no plans for the new team types yet.
+   Editors change plans from the dashboard after that.
    ============================================================ */
 
-// Groups render in this order. Add/rename here if you ever want
-// a new group (also add it to the dashboard's category dropdown).
-export const CATEGORIES = [
-  { id: "packages",   title: "SolidReach Packages" },
-  { id: "individual", title: "Individual Services" }
+export const GROUPS = [
+  { id: "re", title: "Real Estate Solutions", short: "Real Estate", img: "assets/img/realestate.jpg",
+    blurb: "From motivated seller prospecting to acquisition management, we help investors build and convert their pipeline." },
+  { id: "as", title: "Appointment Setting Solutions", short: "Appointment Setting", img: "assets/img/callcenter.jpg",
+    blurb: "Dedicated setters who handle prospecting, qualification, scheduling, and follow-up for Roofing, Solar and Insurance teams." }
 ];
 
+// Team types render in this order inside their group.
+export const CATEGORIES = [
+  { id: "lg", groupId: "re", accent: "#1A5FD0",
+    title: "Lead Generation Teams", label: "Real Estate · Lead Generation",
+    desc: "Get more conversations with motivated sellers and build a consistent pipeline of off-market opportunities.",
+    note: "All include prospect lists, dialer, caller management, performance monitoring, and a dedicated Client Success Manager.",
+    needs: ["Cold Calling", "Lead Generation", "Lead Qualification", "Follow-Up"], industries: [] },
+  { id: "ma", groupId: "re", accent: "#0F9D84",
+    title: "Managed Acquisition Teams", label: "Real Estate · Managed Acquisition",
+    desc: "Build a dedicated team to manage your leads, acquisitions, and dispositions.",
+    note: "",
+    needs: ["Lead Management", "Acquisitions", "Dispositions", "CRM Management", "Follow-Up"], industries: [] },
+  { id: "as", groupId: "as", accent: "#8B6CFF",
+    title: "Appointment Setting Teams", label: "Appointment Setting",
+    desc: "Choose the team size that matches your sales goals. We’ll handle the outreach while you focus on closing.",
+    note: "All plans include prospect lists, dialer, calendar and pipeline management, and a 24/7 Client Success Manager.",
+    needs: ["Prospecting", "Outreach", "Lead Qualification", "Appointment Booking", "Follow-Up"],
+    industries: ["Roofing", "Solar", "Insurance", "Other"] }
+];
+
+const P = (category, order, title, price, oldPrice, badge, featured, features) =>
+  ({ category, order, title, price, period: "/mo", oldPrice, badge, featured, features });
+
+// Draft prices from the client's brief; confirm before going live.
 export const DEFAULT_PLANS = [
-  // ---- SolidReach Packages ----
-  { category: "packages", order: 1, title: "Launch", price: "$1,500", period: "/mo",
-    oldPrice: "", badge: "", featured: false,
-    features: ["1 Cold Caller", "+40 qualified leads/month", "24/7 Client Success Manager", "List & Dialer Included"],
-    ctaText: "Choose Plan", ctaLink: "#contact" },
+  // ---- Real Estate · Lead Generation ----
+  P("lg", 1, "Launch", "$1,499", "", "", false, ["1 Cold Caller", "40 lead target / month"]),
+  P("lg", 2, "Scale", "$2,799", "", "Popular", true, ["2 Cold Callers", "80 lead target / month"]),
+  P("lg", 3, "Growth", "$5,299", "", "", false, ["4 Cold Callers", "160 lead target / month"]),
 
-  { category: "packages", order: 2, title: "Scale", price: "$2,800", period: "/mo",
-    oldPrice: "$3,000", badge: "", featured: false,
-    features: ["2 Cold Callers", "+80 qualified leads/month", "24/7 Client Success Manager", "List & Dialer Included"],
-    ctaText: "Choose Plan", ctaLink: "#contact" },
+  // ---- Real Estate · Managed Acquisition ----
+  P("ma", 1, "Close", "$3,699", "$4,260", "", false, ["2 Cold Callers", "Full-Time Lead Manager"]),
+  P("ma", 2, "Acquisition Plus", "$4,299", "$5,070", "Most Popular", true, ["2 Cold Callers", "Full-Time Lead Manager", "Part-Time Acquisition Manager"]),
+  P("ma", 3, "Acquisition Pro", "$7,599", "$8,880", "", false, ["4 Cold Callers", "Full-Time Lead Manager", "Full-Time Acquisition Manager"]),
+  P("ma", 4, "Full Cycle", "$8,899", "$10,500", "Complete Operation", false, ["4 Cold Callers", "Full-Time Lead Manager", "Full-Time Acquisition Manager", "Full-Time Disposition Manager"]),
 
-  { category: "packages", order: 3, title: "Close", price: "$3,449", period: "/mo",
-    oldPrice: "$3,720", badge: "MOST POPULAR", featured: true,
-    features: ["2 Cold Callers + PT Acquisition Manager", "+80 qualified leads/month", "24/7 Client Success Manager", "List & Dialer Included"],
-    ctaText: "Choose Plan", ctaLink: "#contact" },
-
-  { category: "packages", order: 4, title: "Growth", price: "$5,299", period: "/mo",
-    oldPrice: "$6,000", badge: "", featured: false,
-    features: ["4 Cold Callers", "+160 qualified leads/month", "24/7 Client Success Manager", "List & Dialer Included"],
-    ctaText: "Choose Plan", ctaLink: "#contact" },
-
-  { category: "packages", order: 5, title: "Dominate", price: "$7,499", period: "/mo",
-    oldPrice: "$8,940", badge: "", featured: false,
-    features: ["5 Cold Callers + FT Acquisition Manager", "+160 qualified leads/month", "24/7 Client Success Manager", "List & Dialer Included"],
-    ctaText: "Choose Plan", ctaLink: "#contact" },
-
-  // ---- Individual Services ----
-  { category: "individual", order: 1, title: "Lead Manager", price: "$1,260", period: "/mo",
-    oldPrice: "", badge: "", featured: false,
-    features: ["Lead Follow-Up & Management", "CRM Management", "Lead Qualification & Organization"],
-    ctaText: "Choose Plan", ctaLink: "#contact" },
-
-  { category: "individual", order: 2, title: "Acquisition Manager", price: "$1,440", period: "/mo",
-    oldPrice: "", badge: "", featured: false,
-    features: ["Lead Qualification & Negotiation", "Comps, ARV, Offers & Follow-Up", "Deal Analysis & Acquisition"],
-    ctaText: "Choose Plan", ctaLink: "#contact" },
-
-  { category: "individual", order: 3, title: "Disposition Manager", price: "$1,440", period: "/mo",
-    oldPrice: "", badge: "", featured: false,
-    features: ["Cash Buyer Outreach", "Buyer List Management", "Deal Marketing & Negotiation"],
-    ctaText: "Choose Plan", ctaLink: "#contact" }
+  // ---- Appointment Setting ----
+  P("as", 1, "Starter", "$1,699", "", "", false, ["1 Dedicated Appointment Setter", "Prospect research and list building", "Outbound calling and outreach", "Lead qualification", "Appointment scheduling", "Follow-up with prospects"]),
+  P("as", 2, "Growth", "$2,999", "$3,400", "Most Popular", true, ["2 Dedicated Appointment Setters", "Everything in Starter", "Greater prospecting capacity", "Consistent follow-up coverage"]),
+  P("as", 3, "Scale", "$5,799", "$6,800", "Best Value", false, ["4 Dedicated Appointment Setters", "Everything in Growth", "Expanded prospecting capacity", "Structured follow-up processes"])
 ];
