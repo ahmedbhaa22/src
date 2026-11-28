@@ -2,6 +2,7 @@
    SolidReach Co. — site.js (Typewriter design)
    - SR helpers: typewriter, rotating words, money formatting
    - Package request popup (opened from each pricing card)
+   - "Get a Call" popup (opened by any [data-call] button)
    - Page animations (GSAP + ScrollTrigger + Lenis smooth scroll)
    The pricing section itself is built by js/pricing.js, which
    calls SR.pricingReady() once the cards are on the page.
@@ -90,7 +91,59 @@
     return out;
   }
 
-  /* plan: {title, priceValue, priceText}; cat: {group, needs, isAs} */
+  var DONE_ICON = '<svg aria-hidden="true" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6"/></svg>';
+
+  /* honeypot: hidden from people, bots tend to fill it */
+  function honeypot(f) {
+    var hp = h('div', 'fm-hp'); hp.setAttribute('aria-hidden', 'true');
+    var hpi = document.createElement('input'); hpi.type = 'text'; hpi.name = 'website'; hpi.tabIndex = -1; hpi.autocomplete = 'off';
+    hp.appendChild(hpi); f.appendChild(hp);
+    return hpi;
+  }
+  function showDone(title, text, withMail) {
+    mBody.innerHTML = '<div class="fm-done">' + DONE_ICON + '<h4></h4><p></p></div>';
+    mBody.querySelector('h4').textContent = title; mBody.querySelector('.fm-done p').textContent = text;
+    if (withMail) {
+      var p = h('p', 'fm-mock'); p.appendChild(document.createTextNode('No email app? Write to us at '));
+      var a = h('a', null, CONTACT_EMAIL); a.href = 'mailto:' + CONTACT_EMAIL; p.appendChild(a);
+      mBody.querySelector('.fm-done').appendChild(p);
+    }
+  }
+  /* o: {payload, submit, err, label, subject, lines, doneTitle, doneText, names} */
+  function sendLead(o) {
+    function fallbackToEmail() {
+      window.location.href = 'mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent(o.subject) + '&body=' + encodeURIComponent(o.lines.join('\n'));
+      showDone('Almost done', 'Your email app opened with your request ready. Press send and our team will call you at the number you provided.', true);
+    }
+    function showErr(msg) { o.err.textContent = msg; o.err.hidden = false; o.submit.disabled = false; o.submit.textContent = o.label; }
+    o.err.hidden = true; o.submit.disabled = true; o.submit.textContent = 'Sending…';
+    fetch('api/lead.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(o.payload) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, j: j }; }); })
+      .then(function (res) {
+        if (res.j.ok) return showDone(o.doneTitle, o.doneText, false);
+        if (res.status === 422) {
+          var fields = (res.j.fields || []).map(function (k) { return o.names[k] || k; });
+          return showErr('Please check your ' + (fields.join(', ') || 'details') + ' and try again.');
+        }
+        if (res.status === 429) return showErr('We already received several requests from you. Please try again later or email ' + CONTACT_EMAIL + '.');
+        fallbackToEmail(); /* endpoint not set up or mail server down */
+      })
+      .catch(fallbackToEmail);
+  }
+  function showModal(f) {
+    mBody.appendChild(f);
+    modal.hidden = false;
+    document.documentElement.classList.add('fm-open');
+    if (lenis) lenis.stop();
+    if (G) {
+      gsap.fromTo(modal.querySelector('.fm-bg'), { opacity: 0 }, { opacity: 1, duration: 0.3 });
+      gsap.fromTo(modal.querySelector('.fm-panel'), { y: 40, opacity: 0, scale: 0.97 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' });
+      gsap.from(f.children, { y: 16, opacity: 0, stagger: 0.05, duration: 0.4, delay: 0.15, ease: 'power2.out' });
+    }
+    setTimeout(function () { var x = modal.querySelector('.fm-chip, input'); if (x) x.focus(); }, 60);
+  }
+
+  /* plan: {title, priceText, period}; cat: {group, title, needs, industries} */
   function openForm(plan, cat) {
     if (!modal) buildModal();
     var priceLabel = plan.priceText ? plan.priceText + (plan.period || '/mo') : '';
@@ -110,12 +163,8 @@
     f.appendChild(field('fm-notes', 'Anything else we should know?', 'textarea', 'Markets, goals, current tools…', false));
     var s = h('button', 'fm-submit', 'Submit Request'); s.type = 'submit';
     f.appendChild(s);
-    /* honeypot: hidden from people, bots tend to fill it */
-    var hp = h('div', 'fm-hp'); hp.setAttribute('aria-hidden', 'true');
-    var hpi = document.createElement('input'); hpi.type = 'text'; hpi.name = 'website'; hpi.tabIndex = -1; hpi.autocomplete = 'off';
-    hp.appendChild(hpi); f.appendChild(hp);
+    var hpi = honeypot(f);
     var openedAt = Date.now();
-    var DONE_ICON = '<svg aria-hidden="true" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6"/></svg>';
     var err = h('p', 'fm-err'); err.setAttribute('role', 'alert'); err.hidden = true;
     f.insertBefore(err, s);
 
@@ -129,53 +178,57 @@
         name: v('fm-name'), company: v('fm-company'), email: v('fm-email'), phone: v('fm-phone'), notes: v('fm-notes'),
         website: hpi.value, elapsed: Date.now() - openedAt
       };
-      function mailtoHref() {
-        var lines = ['Package: ' + payload.package + (priceLabel ? ' (' + priceLabel + ')' : ''), 'Solution: ' + payload.solution, 'Needs: ' + (payload.needs.join(', ') || '-')];
-        if (industry) lines.push('Industry: ' + industry);
-        lines.push('', 'Name: ' + payload.name, 'Company: ' + (payload.company || '-'), 'Email: ' + payload.email, 'Phone: ' + payload.phone, '', 'Notes: ' + (payload.notes || '-'));
-        return 'mailto:' + CONTACT_EMAIL + '?subject=' + encodeURIComponent('Package request: ' + payload.package + ' — ' + payload.name) + '&body=' + encodeURIComponent(lines.join('\n'));
-      }
-      function done(title, text, withMail) {
-        mBody.innerHTML = '<div class="fm-done">' + DONE_ICON + '<h4></h4><p></p></div>';
-        mBody.querySelector('h4').textContent = title; mBody.querySelector('.fm-done p').textContent = text;
-        if (withMail) {
-          var p = h('p', 'fm-mock'); p.appendChild(document.createTextNode('No email app? Write to us at '));
-          var a = h('a', null, CONTACT_EMAIL); a.href = 'mailto:' + CONTACT_EMAIL; p.appendChild(a);
-          mBody.querySelector('.fm-done').appendChild(p);
-        }
-      }
-      function fallbackToEmail() {
-        window.location.href = mailtoHref();
-        done('Almost done', 'Your email app opened with your request ready. Press send and our team will call you at the number you provided.', true);
-      }
-      function showErr(msg) { err.textContent = msg; err.hidden = false; s.disabled = false; s.textContent = 'Submit Request'; }
-
-      err.hidden = true; s.disabled = true; s.textContent = 'Sending…';
-      fetch('api/lead.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { status: r.status, j: j }; }); })
-        .then(function (res) {
-          if (res.j.ok) return done('Request received', 'Thanks! Our team will call you at the number you provided.', false);
-          if (res.status === 422) {
-            var names = { email: 'email', phone: 'phone number', name: 'full name' };
-            var fields = (res.j.fields || []).map(function (k) { return names[k] || k; });
-            return showErr('Please check your ' + (fields.join(', ') || 'details') + ' and try again.');
-          }
-          if (res.status === 429) return showErr('We already received several requests from you. Please try again later or email ' + CONTACT_EMAIL + '.');
-          fallbackToEmail(); /* endpoint not set up or mail server down */
-        })
-        .catch(fallbackToEmail);
+      var lines = ['Package: ' + payload.package + (priceLabel ? ' (' + priceLabel + ')' : ''), 'Solution: ' + payload.solution, 'Needs: ' + (payload.needs.join(', ') || '-')];
+      if (industry) lines.push('Industry: ' + industry);
+      lines.push('', 'Name: ' + payload.name, 'Company: ' + (payload.company || '-'), 'Email: ' + payload.email, 'Phone: ' + payload.phone, '', 'Notes: ' + (payload.notes || '-'));
+      sendLead({ payload: payload, submit: s, err: err, label: 'Submit Request',
+        subject: 'Package request: ' + payload.package + ' — ' + payload.name, lines: lines,
+        doneTitle: 'Request received', doneText: 'Thanks! Our team will call you at the number you provided.',
+        names: { email: 'email', phone: 'phone number', name: 'full name' } });
     });
-    mBody.appendChild(f);
-    modal.hidden = false;
-    document.documentElement.classList.add('fm-open');
-    if (lenis) lenis.stop();
-    if (G) {
-      gsap.fromTo(modal.querySelector('.fm-bg'), { opacity: 0 }, { opacity: 1, duration: 0.3 });
-      gsap.fromTo(modal.querySelector('.fm-panel'), { y: 40, opacity: 0, scale: 0.97 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' });
-      gsap.from(f.children, { y: 16, opacity: 0, stagger: 0.05, duration: 0.4, delay: 0.15, ease: 'power2.out' });
-    }
-    setTimeout(function () { var x = modal.querySelector('.fm-chip, input'); if (x) x.focus(); }, 60);
+    showModal(f);
   }
+
+  /* "Get a Call": first name, last name, email, phone */
+  function openCall() {
+    if (!modal) buildModal();
+    modal.querySelector('.fm-kicker').textContent = 'Get a Call';
+    modal.querySelector('.fm-title').textContent = 'Leave your details and we’ll call you';
+    mBody.innerHTML = '';
+    var f = h('form', 'fm-form');
+    var grid = h('div', 'fm-grid');
+    grid.appendChild(field('fm-first', 'First name', 'text', 'John', true));
+    grid.appendChild(field('fm-last', 'Last name', 'text', 'Smith', true));
+    grid.appendChild(field('fm-email', 'Email', 'email', 'john@company.com', true));
+    grid.appendChild(field('fm-phone', 'Phone number', 'tel', '(555) 123-4567', true));
+    f.appendChild(grid);
+    f.querySelector('#fm-first').autocomplete = 'given-name';
+    f.querySelector('#fm-last').autocomplete = 'family-name';
+    f.querySelector('#fm-email').autocomplete = 'email';
+    f.querySelector('#fm-phone').autocomplete = 'tel';
+    var s = h('button', 'fm-submit', 'Request a Call'); s.type = 'submit';
+    f.appendChild(s);
+    var hpi = honeypot(f);
+    var openedAt = Date.now();
+    var err = h('p', 'fm-err'); err.setAttribute('role', 'alert'); err.hidden = true;
+    f.insertBefore(err, s);
+
+    f.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = function (id) { return (f.querySelector('#' + id).value || '').trim(); };
+      var payload = { type: 'call', first_name: v('fm-first'), last_name: v('fm-last'), email: v('fm-email'), phone: v('fm-phone'),
+        website: hpi.value, elapsed: Date.now() - openedAt };
+      var full = payload.first_name + ' ' + payload.last_name;
+      sendLead({ payload: payload, submit: s, err: err, label: 'Request a Call',
+        subject: 'Call request: ' + full,
+        lines: ['Please call me back.', '', 'First name: ' + payload.first_name, 'Last name: ' + payload.last_name, 'Email: ' + payload.email, 'Phone: ' + payload.phone],
+        doneTitle: 'Thanks, ' + payload.first_name + '!', doneText: 'We received your details. Our team will call you shortly at the number you provided.',
+        names: { email: 'email', phone: 'phone number', first_name: 'first name', last_name: 'last name' } });
+    });
+    showModal(f);
+  }
+  document.addEventListener('click', function (e) { if (e.target.closest('[data-call]')) openCall(); });
+
   function closeForm() { modal.hidden = true; document.documentElement.classList.remove('fm-open'); if (lenis) lenis.start(); }
 
   /* ---------- smooth scrolling + in-page links ---------- */
@@ -199,7 +252,7 @@
   });
 
   window.SR = { RM: RM, G: G, money: money, h: h, type: type, erase: erase, wait: wait, rotate: rotate,
-    openForm: openForm, goTo: goTo,
+    openForm: openForm, openCall: openCall, goTo: goTo,
     pricingReady: function () { if (G) ScrollTrigger.refresh(); } };
 
   /* ---------- typewriter headline, then rotating industries ---------- */
@@ -224,18 +277,6 @@
 
   /* reading progress bar */
   gsap.to('.progress', { scaleX: 1, ease: 'none', scrollTrigger: { start: 0, end: 'max', scrub: 0.3 } });
-
-  /* ticker: always moving; scroll speed pushes it and leans the words */
-  var loop = gsap.to('#ticker', { xPercent: -50, duration: 30, ease: 'none', repeat: -1 });
-  var skew = gsap.quickTo('#ticker span', 'skewX', { duration: 0.4, ease: 'power3' });
-  var skT;
-  ScrollTrigger.create({ onUpdate: function (s) {
-    var v = s.getVelocity();
-    gsap.to(loop, { timeScale: s.direction * Math.min(5, 1 + Math.abs(v) / 400), duration: 0.25, overwrite: true });
-    gsap.to(loop, { timeScale: s.direction, duration: 1, delay: 0.25 });
-    skew(gsap.utils.clamp(-14, 14, -v / 120));
-    clearTimeout(skT); skT = setTimeout(function () { skew(0); }, 120);
-  } });
 
   /* magnetic buttons */
   if (window.matchMedia('(hover:hover)').matches) {
